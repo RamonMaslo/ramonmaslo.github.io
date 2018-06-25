@@ -30,14 +30,15 @@
 	font-family: 'Reem Kufi';
 	font-style: normal;
 	font-weight: 400;
-	src: local('Reem Kufi Regular'), local('ReemKufi-Regular'), url('../webfonts/reem-kufi-v4-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-	url('../webfonts/reem-kufi-v4-latin-regular.woff') format('woff');
+	src: local('Reem Kufi Regular'), local('ReemKufi-Regular'), url('../webfonts/reem-kufi-v4-latin-regular.woff2') format('woff2'),
+		/* Chrome 26+, Opera 23+, Firefox 39+ */
+		url('../webfonts/reem-kufi-v4-latin-regular.woff') format('woff');
 	/* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 body {
-	background-color: #466574;
-	color: white;
+	background-color: white;
+	color: #262626;
 	font-family: 'Roboto';
 	font-weight: 100;
 }
@@ -45,6 +46,17 @@ body {
 h1 {
 	font-family: 'Reem Kufi';
 	font-size: 4em;
+	cursor: default;
+}
+
+h5 {
+	font-family: 'Reem Kufi';
+	font-weight: 100;
+	cursor: default;
+}
+
+p {
+	cursor: default;
 }
 
 canvas {
@@ -55,11 +67,6 @@ canvas {
 	height: 100%;
 }
 
-.background {
-	background: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("../img/bg.jpg") no-repeat center center fixed;
-  background-size: cover;
-}
-
 .vertical-center {
 	min-height: 100%;
 	min-height: 100vh;
@@ -68,11 +75,11 @@ canvas {
 }
 
 .light {
-	color: white;
+	color: #F0EAE4;
 }
 
 .dark {
-	color: #466574;
+	color: #262626;
 }
 
 .noselect {
@@ -89,24 +96,29 @@ canvas {
 }
 
 .nodecoration:hover {
-	color: white;
+	color: #262626;
 	text-decoration: none;
+}
+
+.headline {
+	margin-bottom: 1em;
 }
 
 .caption {
 	font-size: 2em;
 	font-weight: 100;
+	cursor: default;
 }
 
-.projects {
-	padding-top: 4em;
-	padding-bottom: 4em;
-	background-color: white;
+header {
+	background: url('../img/bg.jpg') center center no-repeat;
+	background-size: cover;
 }
 
 .footer {
+	border-top: 1px solid #ddd;
 	padding-top: 4em;
-	padding-bottom: 4em;
+	padding-bottom: 2em;
 }
 
 .links {
@@ -126,9 +138,5 @@ canvas {
 }
 
 .links li a:hover {
-	color: white;
-}
-
-.blockquote {
-	margin-top: 2em;
+	color: #262626;
 }
