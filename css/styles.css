@@ -9,7 +9,7 @@ html,
 body {
   font-family: "8BIT WONDER";
   height: 100%;
-  background-color: #94b0c2;
+  background-color: rgb(148, 176, 194);
 }
 
 h1,
@@ -19,18 +19,18 @@ a {
 }
 
 .background-image {
-  background-color: #94b0c2;
+  background-color: rgb(148, 176, 194);
   background-image: url("../img/ramon.png");
   background-repeat: no-repeat;
   background-position: top right;
   background-size: contain;
-  box-shadow: 0 0 100px 0 #566c86 inset;
+  box-shadow: 0 0 100px 0 rgb(86, 108, 134) inset;
 }
 
 .linkedin {
   text-decoration: none;
   color: white;
-  background-color: #566c86;
+  background-color: rgb(86, 108, 134);
   box-shadow: 2px 0 black, -2px 0 black, 0 2px black, 0 -2px black;
   /* box-shadow: 3px 0 white, -3px 0 white, 0 3px white, 0 -3px white; */
   /* border: 2px solid black; */
@@ -39,5 +39,16 @@ a {
 
 .linkedin:hover {
   color: white;
-  background-color: #333c57;
+  background-color: rgb(51, 60, 87);
+}
+
+@media (max-width: 480px) {
+  .background-image {
+    background-color: rgb(148, 176, 194);
+    background-image: url("../img/ramon.png");
+    background-repeat: no-repeat;
+    background-position: top right;
+    background-size: cover;
+    box-shadow: 0 0 100px 0 rgb(86, 108, 134) inset;
+  }
 }
