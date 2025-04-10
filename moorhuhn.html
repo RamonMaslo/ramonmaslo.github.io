@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moorhuhn Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #87CEEB;
+            font-family: Arial, sans-serif;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16,16 L32,16 M16,0 L16,32 M14,14 L18,18 M14,18 L18,14" stroke="black" stroke-width="2"/><path d="M20,14 L32,14 L32,18 L20,18 Z" fill="brown"/></svg>') 16 16, crosshair;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%2387CEEB"/><path d="M0,500 Q200,450 400,500 T800,500 L800,600 L0,600 Z" fill="%23228B22"/></svg>');
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Fullscreen styles */
+        #game-container.fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            background-size: cover;
+        }
+
+        .fullscreen .chicken {
+            transform: scale(1.5);
+        }
+
+        #fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 100px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 800px) {
+            #game-container {
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+        }
+
+        #game-screen {
+            display: none;
+        }
+
+        #game-over-screen {
+            display: none;
+        }
+
+        .button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        #score-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        #timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        .chicken {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><path d="M25,10 Q35,10 40,25 T25,40 T10,25 T25,10" fill="%23brown"/><circle cx="35" cy="15" r="2" fill="black"/></svg>');
+            transition: transform 0.1s;
+        }
+
+        .chicken.hit {
+            transform: rotate(180deg);
+            opacity: 0;
+            transition: all 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Add audio elements -->
+        <audio id="gunshot" preload="auto">
+            <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAGAAAIQAAUFBQUFBQUFBQUISEhISEhISEhIS4uLi4uLi4uLi47Ozs7Ozs7Ozs7SEhISEhISEhISP//////////////////////////AAAAAExhdmM1OC4zNQAAAAAAAAAAAAAAACQCAAAAAAAACEAkyH96AAAAAAAAAAAAAAAA//sQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBkBY/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+        </audio>
+        <audio id="chicken-hit" preload="auto">
+            <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAADAAAGQAAwMDAwMDAwMDAwMExMTExMTExMTExMbm5ubm5ubm5ubm6KioqKioqKioqK//////////////////////////8AAAAATGFtZSAzLjEwMAAAAAAAAAAAAAAAACQDAAAAAAAABkBHZVz4AAAAAAAAAAAAAAAA//sQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBkBY/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+        </audio>
+        <audio id="game-start" preload="auto">
+            <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAHgAA5OTk5OTk5OTk5OVVVVVVVVVVVVVVwcHBwcHBwcHBwcIyMjIyMjIyMjIz//////////////////////////wAAAABMYXZjNTguMzUAAAAAAAAAAAAAAACQAwAAAAAAAAeARK5YOQAAAAAAAAAAAAAAA//sQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBkBY/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+        </audio>
+        <audio id="game-over" preload="auto">
+            <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAHgAA5OTk5OTk5OTk5OVVVVVVVVVVVVVVwcHBwcHBwcHBwcIyMjIyMjIyMjIz//////////////////////////wAAAABMYXZjNTguMzUAAAAAAAAAAAAAAACQAwAAAAAAAAeARK5YOQAAAAAAAAAAAAAAA//sQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBkBY/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+        </audio>
+        <audio id="background-music" preload="auto" loop>
+            <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAIAAAJYABJSUlJSUlJSUlJSWNjY2NjY2NjY2Njd3d3d3d3d3d3d3eLi4uLi4uLi4uLi5+fn5+fn5+fn5+fs7Ozs7Ozs7Ozs7PHx8fHx8fHx8fHx9vb29vb29vb29v//////////////////////////wAAAABMYXZjNTguMzUAAAAAAAAAAAAAAACQBAAAAAAAAAlgJJkqbQAAAAAAAAAAAAAAAAD/+xBkAA/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGQFD/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=" type="audio/mp3">
+        </audio>
+
+        <div id="start-screen" class="screen">
+            <h1>Moorhuhn Game</h1>
+            <button class="button" onclick="startGame()">Start Game</button>
+            <button class="button" onclick="toggleSound()" id="sound-toggle">
+                🔊 Enable Sound
+            </button>
+        </div>
+
+        <div id="game-screen">
+            <div id="score-container">Score: <span id="score">0</span></div>
+            <div id="timer-container">Time: <span id="timer">60</span>s</div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h1>Game Over!</h1>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button class="button" onclick="startGame()">Play Again</button>
+        </div>
+
+        <!-- Add fullscreen button -->
+        <button id="fullscreen-btn" onclick="toggleFullscreen()">
+            <span id="fullscreen-icon">⛶</span> Fullscreen
+        </button>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let gameInterval;
+        let chickens = [];
+        let isGameRunning = false;
+        let isSoundEnabled = false;
+        let isFullscreen = false;
+
+        // Sound functions
+        function playSound(soundId) {
+            if (!isSoundEnabled) return;
+            const sound = document.getElementById(soundId);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.volume = 0.3; // Lower volume to 30%
+                sound.play().catch(e => {
+                    console.log('Error playing sound:', e);
+                    // If autoplay is blocked, show a message to the user
+                    if (e.name === 'NotAllowedError') {
+                        alert('Please click somewhere on the game area to enable sounds!');
+                    }
+                });
+            }
+        }
+
+        function toggleBackgroundMusic(play) {
+            const music = document.getElementById('background-music');
+            if (!music) return;
+            
+            if (play && isSoundEnabled) {
+                music.volume = 0.1; // Lower background music volume to 10%
+                music.play().catch(e => console.log('Error playing background music:', e));
+            } else {
+                music.pause();
+                music.currentTime = 0;
+            }
+        }
+
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            const button = document.getElementById('sound-toggle');
+            button.textContent = isSoundEnabled ? '🔊 Disable Sound' : '🔊 Enable Sound';
+        }
+
+        function startGame() {
+            // Reset game state
+            score = 0;
+            timeLeft = 60;
+            isGameRunning = true;
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+
+            // Play start sound and background music
+            playSound('game-start');
+            toggleBackgroundMusic(true);
+
+            // Show/hide appropriate screens
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('game-over-screen').style.display = 'none';
+
+            // Clear any existing chickens
+            chickens.forEach(chicken => chicken.remove());
+            chickens = [];
+
+            // Start game loops
+            gameInterval = setInterval(gameLoop, 1000);
+            spawnChicken();
+        }
+
+        function gameLoop() {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function spawnChicken() {
+            if (!isGameRunning) return;
+
+            const container = document.getElementById('game-container');
+            const gameWidth = container.offsetWidth;
+            const gameHeight = container.offsetHeight;
+
+            const chicken = document.createElement('div');
+            chicken.className = 'chicken';
+            container.appendChild(chicken);
+
+            // Random starting position and speed
+            const startFromRight = Math.random() < 0.5;
+            const speed = (2 + Math.random() * 3) * (isFullscreen ? 2 : 1); // Faster in fullscreen
+            const verticalPos = (gameHeight * 0.2) + Math.random() * (gameHeight * 0.5);
+
+            chicken.style.top = `${verticalPos}px`;
+            let position = startFromRight ? gameWidth : -50;
+            chicken.style.left = `${position}px`;
+            chicken.style.transform = `scaleX(${startFromRight ? -1 : 1})${isFullscreen ? ' scale(1.5)' : ''}`;
+
+            // Click handler
+            chicken.addEventListener('click', () => {
+                if (!chicken.classList.contains('hit')) {
+                    score += 10;
+                    document.getElementById('score').textContent = score;
+                    chicken.classList.add('hit');
+                    playSound('gunshot');
+                    playSound('chicken-hit');
+                    setTimeout(() => chicken.remove(), 500);
+                }
+            });
+
+            // Movement animation
+            function moveChicken() {
+                if (!isGameRunning) {
+                    chicken.remove();
+                    return;
+                }
+
+                position += startFromRight ? -speed : speed;
+                chicken.style.left = `${position}px`;
+
+                if (position < -50 || position > gameWidth) {
+                    chicken.remove();
+                    chickens = chickens.filter(c => c !== chicken);
+                } else {
+                    requestAnimationFrame(moveChicken);
+                }
+            }
+
+            chickens.push(chicken);
+            moveChicken();
+
+            // Schedule next spawn
+            const nextSpawn = 500 + Math.random() * 1500;
+            setTimeout(() => spawnChicken(), nextSpawn);
+        }
+
+        function endGame() {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'flex';
+            
+            // Play game over sound and stop background music
+            playSound('game-over');
+            toggleBackgroundMusic(false);
+        }
+
+        // Add click sound to game container
+        document.getElementById('game-container').addEventListener('click', (e) => {
+            if (isGameRunning && e.target.id === 'game-container') {
+                playSound('gunshot');
+            }
+        });
+
+        // Initialize audio context on first user interaction
+        document.addEventListener('click', function initAudio() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                const audioContext = new AudioContext();
+                document.removeEventListener('click', initAudio);
+            }
+        }, { once: true });
+
+        // Fullscreen functions
+        function toggleFullscreen() {
+            const container = document.getElementById('game-container');
+            const icon = document.getElementById('fullscreen-icon');
+
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                container.classList.add('fullscreen');
+                icon.textContent = '⛶';
+                isFullscreen = true;
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                container.classList.remove('fullscreen');
+                icon.textContent = '⛶';
+                isFullscreen = false;
+            }
+            
+            // Adjust chicken spawn positions based on container size
+            updateGameDimensions();
+        }
+
+        // Update game dimensions when fullscreen changes
+        function updateGameDimensions() {
+            const container = document.getElementById('game-container');
+            gameWidth = container.offsetWidth;
+            gameHeight = container.offsetHeight;
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', function() {
+            const container = document.getElementById('game-container');
+            if (!document.fullscreenElement) {
+                container.classList.remove('fullscreen');
+                isFullscreen = false;
+            }
+            updateGameDimensions();
+        });
+
+        // Initialize game dimensions
+        updateGameDimensions();
+    </script>
+</body>
+</html>
