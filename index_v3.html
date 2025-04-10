@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramon Wedowski</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;900&display=swap" rel="stylesheet">
+    <style>
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #fff, #64ffda, #fff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .hover-effect {
+            transition: all 0.3s ease;
+        }
+        .hover-effect:hover {
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.8);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-black text-white overflow-hidden">
+    <canvas id="fluidCanvas"></canvas>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="text-center relative z-20">
+            <h1 class="text-7xl md:text-9xl font-black mb-6 tracking-tighter text-gradient">
+                RAMON<br>WEDOWSKI
+            </h1>
+            <div class="h-px w-24 bg-gradient-to-r from-transparent via-[#64ffda] to-transparent mx-auto mb-6"></div>
+            <p class="text-xl md:text-2xl font-light tracking-wide uppercase hover-effect">
+                Software Engineer
+            </p>
+            
+            <!-- Social Links -->
+            <div class="mt-12 space-x-6">
+                <a href="mailto:your@email.com" class="inline-block px-8 py-3 text-lg border border-[#64ffda] text-[#64ffda] hover:bg-[#64ffda] hover:text-black transition-all duration-300 hover-effect">
+                    Get in Touch
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Corner Text -->
+    <div class="fixed bottom-8 left-8 text-sm font-light text-[#64ffda] tracking-wider hover-effect">
+        © 2025
+    </div>
+    <div class="fixed bottom-8 right-8 text-sm font-light text-[#64ffda] tracking-wider hover-effect">
+        Based in Earth
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fluidCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let mouseX = width / 2;
+        let mouseY = height / 2;
+        let time = 0;
+
+        // Fluid simulation parameters
+        const GRID_SIZE = 50;
+        const NUM_METABALLS = 15;
+        const cellSize = Math.max(width, height) / GRID_SIZE;
+
+        class Metaball {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.radius = Math.random() * 50 + 25;
+                this.targetRadius = this.radius;
+                this.hue = Math.random() * 360;
+                this.saturation = 80;
+                this.lightness = 60;
+            }
+
+            update() {
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off walls
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Mouse interaction
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 200) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (200 - dist) / 200;
+                    this.vx -= Math.cos(angle) * force * 0.2;
+                    this.vy -= Math.sin(angle) * force * 0.2;
+                    this.targetRadius = this.radius * (1 + force * 0.5);
+                } else {
+                    this.targetRadius = this.radius;
+                }
+
+                // Apply velocity limits
+                const maxSpeed = 3;
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+
+                // Color cycling
+                this.hue = (this.hue + 0.2) % 360;
+            }
+        }
+
+        class FluidField {
+            constructor() {
+                this.metaballs = Array.from({ length: NUM_METABALLS }, () => new Metaball());
+                this.createNoiseTexture();
+            }
+
+            createNoiseTexture() {
+                this.noiseCanvas = document.createElement('canvas');
+                this.noiseCanvas.width = width;
+                this.noiseCanvas.height = height;
+                const noiseCtx = this.noiseCanvas.getContext('2d');
+                
+                const imageData = noiseCtx.createImageData(width, height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const value = Math.random() * 255;
+                    data[i] = value;
+                    data[i + 1] = value;
+                    data[i + 2] = value;
+                    data[i + 3] = 255;
+                }
+                
+                noiseCtx.putImageData(imageData, 0, 0);
+            }
+
+            update() {
+                this.metaballs.forEach(ball => ball.update());
+            }
+
+            draw() {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+
+                // Draw metaballs
+                ctx.globalCompositeOperation = 'screen';
+                
+                this.metaballs.forEach(ball => {
+                    const gradient = ctx.createRadialGradient(
+                        ball.x, ball.y, 0,
+                        ball.x, ball.y, ball.targetRadius * 2
+                    );
+                    
+                    gradient.addColorStop(0, `hsla(${ball.hue}, ${ball.saturation}%, ${ball.lightness}%, 1)`);
+                    gradient.addColorStop(0.5, `hsla(${ball.hue}, ${ball.saturation}%, ${ball.lightness}%, 0.5)`);
+                    gradient.addColorStop(1, 'transparent');
+
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.targetRadius * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Apply noise texture
+                ctx.globalCompositeOperation = 'overlay';
+                ctx.globalAlpha = 0.05;
+                ctx.drawImage(this.noiseCanvas, 0, 0);
+                ctx.globalAlpha = 1;
+
+                // Add flow lines
+                ctx.globalCompositeOperation = 'screen';
+                this.drawFlowLines();
+            }
+
+            drawFlowLines() {
+                const numLines = 50;
+                const lineLength = 50;
+                const timeOffset = time * 0.001;
+
+                ctx.strokeStyle = 'rgba(100, 255, 218, 0.1)';
+                ctx.lineWidth = 1;
+
+                for (let i = 0; i < numLines; i++) {
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+
+                    let currentX = x;
+                    let currentY = y;
+
+                    for (let j = 0; j < lineLength; j++) {
+                        let totalForceX = 0;
+                        let totalForceY = 0;
+
+                        this.metaballs.forEach(ball => {
+                            const dx = ball.x - currentX;
+                            const dy = ball.y - currentY;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            const force = ball.radius / (dist * dist);
+                            
+                            totalForceX += dx * force;
+                            totalForceY += dy * force;
+                        });
+
+                        const angle = Math.atan2(totalForceY, totalForceX);
+                        currentX += Math.cos(angle + timeOffset) * 2;
+                        currentY += Math.sin(angle + timeOffset) * 2;
+
+                        ctx.lineTo(currentX, currentY);
+                    }
+                    ctx.stroke();
+                }
+            }
+        }
+
+        const fluidField = new FluidField();
+
+        function updateMousePosition(x, y) {
+            mouseX = x;
+            mouseY = y;
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            updateMousePosition(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            updateMousePosition(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            fluidField.createNoiseTexture();
+        });
+
+        function animate() {
+            fluidField.update();
+            fluidField.draw();
+            time++;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
