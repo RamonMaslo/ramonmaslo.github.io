@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramon Wedowski</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-1: #FF3CAC;
+            --gradient-2: #784BA0;
+            --gradient-3: #2B86C5;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .bg-gradient-animated {
+            background: linear-gradient(-45deg, var(--gradient-1), var(--gradient-2), var(--gradient-3));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px) }
+            50% { transform: translateY(-20px) }
+            100% { transform: translateY(0px) }
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #FF3CAC, #2B86C5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.5); opacity: 0.2; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        .main-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4vh;
+            position: relative;
+        }
+
+        .center-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            padding: 0 4vh;
+        }
+
+        .bottom-content {
+            position: absolute;
+            bottom: 4vh;
+            left: 0;
+            width: 100%;
+            padding: 0 4vh;
+        }
+
+        @media (max-height: 700px) {
+            .name-text {
+                font-size: clamp(3rem, 8vw, 6rem);
+            }
+            .role-text {
+                font-size: clamp(1rem, 2vw, 1.5rem);
+            }
+            .card-text {
+                font-size: clamp(0.875rem, 1.5vw, 1.25rem);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-animated text-white">
+    <!-- Animated Background Circles -->
+    <div id="animated-bg"></div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Centered Name Section -->
+        <div class="center-content">
+            <div class="text-center floating">
+                <h1 class="name-text text-7xl md:text-8xl font-black tracking-tighter mb-4">
+                    RAMON<br>
+                    <span class="text-gradient">WEDOWSKI</span>
+                </h1>
+                <div class="h-1 w-24 bg-gradient-to-r from-pink-500 to-blue-500 mx-auto mb-4"></div>
+                <p class="role-text text-xl md:text-2xl font-light tracking-wide uppercase">
+                    Software Engineer
+                </p>
+            </div>
+        </div>
+
+        <!-- Bottom Content -->
+        <div class="bottom-content">
+            <!-- Cards Section -->
+            <div class="grid md:grid-cols-3 gap-4 mb-8">
+                <div class="card p-4 md:p-6 rounded-2xl">
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Design</h3>
+                    <p class="card-text text-gray-300">Creating beautiful, intuitive interfaces</p>
+                </div>
+                <div class="card p-4 md:p-6 rounded-2xl">
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Develop</h3>
+                    <p class="card-text text-gray-300">Building robust, scalable applications</p>
+                </div>
+                <div class="card p-4 md:p-6 rounded-2xl">
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Deploy</h3>
+                    <p class="card-text text-gray-300">Delivering seamless user experiences</p>
+                </div>
+            </div>
+
+            <!-- Social Links and Footer -->
+            <div class="flex flex-col space-y-6">
+                <div class="flex justify-center items-center space-x-6">
+                    <a href="mailto:your@email.com" class="card px-8 py-3 rounded-full hover:scale-105 transition-transform">
+                        Email
+                    </a>
+                    <a href="https://github.com/yourusername" target="_blank" class="card px-8 py-3 rounded-full hover:scale-105 transition-transform">
+                        GitHub
+                    </a>
+                    <a href="https://linkedin.com/in/yourusername" target="_blank" class="card px-8 py-3 rounded-full hover:scale-105 transition-transform">
+                        LinkedIn
+                    </a>
+                </div>
+
+                <div class="flex justify-between text-sm font-light opacity-75">
+                    <span>© 2025</span>
+                    <span>Based in Earth</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create animated background circles
+        function createCircles() {
+            const bg = document.getElementById('animated-bg');
+            const colors = ['#FF3CAC', '#784BA0', '#2B86C5'];
+            
+            for (let i = 0; i < 15; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                circle.style.width = Math.random() * 400 + 100 + 'px';
+                circle.style.height = circle.style.width;
+                circle.style.left = Math.random() * 100 + 'vw';
+                circle.style.top = Math.random() * 100 + 'vh';
+                circle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                circle.style.opacity = '0.1';
+                circle.style.animationDelay = Math.random() * 4 + 's';
+                bg.appendChild(circle);
+            }
+        }
+
+        // GSAP Animations
+        window.addEventListener('DOMContentLoaded', () => {
+            createCircles();
+
+            gsap.from('.floating', {
+                y: 100,
+                opacity: 0,
+                duration: 1.5,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.card', {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: 'power3.out',
+                delay: 0.5
+            });
+
+            // Mouse move parallax effect
+            document.addEventListener('mousemove', (e) => {
+                const circles = document.querySelectorAll('.circle');
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                circles.forEach(circle => {
+                    const speed = parseFloat(circle.style.width) / 1000;
+                    const x = (window.innerWidth / 2 - mouseX) * speed;
+                    const y = (window.innerHeight / 2 - mouseY) * speed;
+                    
+                    gsap.to(circle, {
+                        x: x,
+                        y: y,
+                        duration: 1
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
