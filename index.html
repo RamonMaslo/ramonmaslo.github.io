@@ -4,23 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ramon Wedowski</title>
+    <style>
+        html, body, iframe {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="content-frame"></iframe>
     <script>
         // List of available versions
         const versions = [
             'index_v1.html',
             'index_v2.html',
-            'index_v3.html',
-            'index_v4.html'
+            'index_v3.html'
         ];
 
-        // Randomly select a version
-        const randomVersion = versions[Math.floor(Math.random() * versions.length)];
+        // Randomly select and load a version
+        function loadRandomVersion() {
+            const randomVersion = versions[Math.floor(Math.random() * versions.length)];
+            document.getElementById('content-frame').src = randomVersion;
+        }
 
-        // Redirect to the selected version
-        window.location.href = randomVersion;
+        // Load content when the page loads
+        window.addEventListener('DOMContentLoaded', loadRandomVersion);
     </script>
-</head>
-<body>
-    <!-- This page will immediately redirect to a random version -->
 </body>
 </html> 
